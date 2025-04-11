@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Duplicate Name Finder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+            max-width: 700px;
+            margin: auto;
+        }
+        h2 {
+            color: #333;
+        }
+        .input-group {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            resize: vertical;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .duplicate {
+            color: red;
+        }
+        .unique {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h2>Duplicate Name Finder</h2>
+    <div id="inputArea">
+        <div class="input-group">
+            <textarea id="nameInput" placeholder="Paste names here... (First Middle Last)"></textarea>
+            <textarea id="birthdayInput" placeholder="Paste birthdays here... (YYYY-MM-DD)"></textarea>
+        </div>
+    </div>
+    <br>
+    <button onclick="findDuplicates()">Check Duplicates</button>
+
+    <div class="result" id="resultArea"></div>
+
+    <script>
+        function findDuplicates() {
+            const namesInput = document.getElementById('nameInput').value.trim();
+            const birthdaysInput = document.getElementById('birthdayInput').value.trim();
+            const names = namesInput.split('\n').filter(n => n.trim() !== ''); // Filter empty lines
+            const birthdays = birthdaysInput.split('\n');
+
+            const occurrences = {};
+
+            // Collect occurrences of names and birthdays
+            names.forEach((line, index) => {
+                const normalizedName = line.trim().toUpperCase();
+                const birthday = birthdays[index] ? birthdays[index].trim() : 'N/A';
+
+                if (!occurrences[normalizedName]) {
+                    occurrences[normalizedName] = { count: 1, birthdays: [birthday], lineNumbers: [index + 1] }; // Add line number
+                } else {
+                    occurrences[normalizedName].count += 1;
+                    occurrences[normalizedName].birthdays.push(birthday);
+                    occurrences[normalizedName].lineNumbers.push(index + 1); // Add line number
+                }
+            });
+
+            const resultDiv = document.getElementById('resultArea');
+            const duplicatesArray = Object.keys(occurrences).filter(name => occurrences[name].count > 1);
+
+            // Total lines processed
+            const totalLines = names.length;
+
+            if (duplicatesArray.length > 0) {
+                const duplicatesHtml = duplicatesArray.map(name => {
+                    const { count, birthdays, lineNumbers } = occurrences[name];
+                    const birthdayList = birthdays.join(', ');
+                    const lineNumberOutput = lineNumbers.join(', ');
+                    return `Number of Lines: ${lineNumberOutput}<br>
+                            <strong>${name}</strong>:<br>
+                            Occurrences: ${count}<br>
+                            Birthdays: ${birthdayList}<br><br>`;
+                }).join('');
+                resultDiv.innerHTML = `<strong class="duplicate">Duplicate Names Found:</strong><br>${duplicatesHtml}
+                <strong>Total Names Processed:</strong> ${totalLines}`;
+            } else {
+                resultDiv.innerHTML = `<strong class="unique">No Duplicates Found.</strong><br>
+                <strong>Total Names Processed:</strong> ${totalLines}`;
+            }
+        }
+    </script>
+</body>
+</html>
